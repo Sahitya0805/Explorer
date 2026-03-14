@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Explorer Auth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <a class="back-link" href="index.html">Back to Explorer</a>
+
+      <section class="auth-card">
+        <p class="eyebrow">ACCOUNT ACCESS</p>
+        <h1 id="authTitle">Log In to Explorer</h1>
+        <p class="sub">Use one page for both login and sign up.</p>
+
+        <div class="mode-switch" role="tablist" aria-label="Authentication mode">
+          <button type="button" class="mode-btn active" data-mode="login">Login</button>
+          <button type="button" class="mode-btn" data-mode="signup">Sign Up</button>
+        </div>
+
+        <form id="authForm" class="auth-form">
+          <label class="field hidden" id="nameWrap">
+            <span>Full Name</span>
+            <input id="name" type="text" autocomplete="name" placeholder="Your name" />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input id="email" type="email" required autocomplete="email" placeholder="you@example.com" />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input id="password" type="password" required autocomplete="current-password" placeholder="At least 6 characters" />
+          </label>
+
+          <button id="submitBtn" type="submit" class="submit-btn">Login</button>
+        </form>
+
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script src="auth.js"></script>
+  </body>
+</html>

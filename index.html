@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voyago AI Travel Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="inde.css" />
+  </head>
+  <body>
+    <div class="bg-video-wrap">
+      <video id="bgVideo" class="bg-video" autoplay muted loop playsinline preload="auto"></video>
+      <div class="bg-overlay"></div>
+    </div>
+    <main class="page">
+      <nav class="top-nav card">
+        <a href="#home" class="brand">Explorer</a>
+        <div class="nav-links">
+          <a href="auth.html">Login / Sign Up</a>
+        </div>
+      </nav>
+
+      <div class="theme-switch card">
+        <span>Background:</span>
+        <button type="button" class="theme-btn active" data-theme="forest">Forest</button>
+        <button type="button" class="theme-btn" data-theme="beach">Beach</button>
+      </div>
+      <div class="aurora"></div>
+      <div class="orb orb-a"></div>
+      <div class="orb orb-b"></div>
+      <div class="orb orb-c"></div>
+
+      <section class="home card" id="home">
+        <p class="eyebrow">WELCOME TO EXPLORER</p>
+        <h1>Smart travel planner with real visuals, INR budgets, and full itinerary downloads.</h1>
+        <p class="sub">
+          Explorer helps you plan your complete trip from one place: destination, days, budget, transport,
+          stays, restaurants, and day-wise schedule. You can switch animated background themes,
+          see destination visuals, and download a complete itinerary file with all trip details.
+        </p>
+        <div class="home-grid">
+          <article>
+            <h3>What You Get</h3>
+            <p>Transport suggestion, hotel picks, restaurant picks, weather snapshot, and day-by-day activities.</p>
+          </article>
+          <article>
+            <h3>Budget in INR</h3>
+            <p>Everything is shown in rupees with clear budget breakdown for transport, stay, food, and activities.</p>
+          </article>
+          <article>
+            <h3>Visual Experience</h3>
+            <p>Destination photos across tourist places, hotels, and restaurants for a non-generic travel feel.</p>
+          </article>
+        </div>
+        <div class="home-cta">
+          <a href="#itinerary" class="home-btn">Go To Itinerary Planner</a>
+        </div>
+      </section>
+
+      <section class="hero card" id="itinerary">
+        <p class="eyebrow">AI TRAVEL CONCIERGE</p>
+        <h1>Plan your full trip in seconds.</h1>
+        <p class="sub">Choose destination, days, and budget. Get transport, hotels, restaurants, and day-wise itinerary instantly.</p>
+
+        <form id="plannerForm" class="planner-form">
+          <label class="field">
+            <span>Destination</span>
+            <input id="destination" type="text" required placeholder="e.g. Bali, Kyoto, Manali" />
+          </label>
+
+          <label class="field">
+            <span>Number of Days</span>
+            <input id="days" type="number" min="1" max="14" value="3" required />
+          </label>
+
+          <div class="field">
+            <span>Budget Range</span>
+            <div class="chips" id="budgetChips">
+              <button type="button" class="chip active" data-budget="low">Low</button>
+              <button type="button" class="chip" data-budget="medium">Medium</button>
+              <button type="button" class="chip" data-budget="high">High</button>
+              <button type="button" class="chip" data-budget="custom">Custom</button>
+            </div>
+          </div>
+
+          <label class="field hidden" id="customBudgetWrap">
+            <span>Custom Budget (INR)</span>
+            <input id="customBudget" type="number" min="5000" placeholder="50000" />
+          </label>
+
+          <div class="field">
+            <span>Mode</span>
+            <div class="chips" id="modeChips">
+              <button type="button" class="chip active" data-mode="balanced">Balanced</button>
+              <button type="button" class="chip" data-mode="luxury">Luxury</button>
+              <button type="button" class="chip" data-mode="adventure">Adventure</button>
+            </div>
+          </div>
+
+          <button type="submit" class="generate-btn" id="generateBtn">Generate Travel Plan</button>
+        </form>
+      </section>
+
+      <section class="photo-wall card" id="photoWall">
+        <div class="photo-head">
+          <p class="eyebrow">CLASSIC DESTINATIONS</p>
+          <h2>Real-world place moodboard</h2>
+        </div>
+        <div class="photo-grid">
+          <figure class="shot tilt-a">
+            <img class="place-photo" data-slot="0" alt="Classic destination view 1" loading="lazy" />
+            <figcaption>Old Town Walks</figcaption>
+          </figure>
+          <figure class="shot tilt-b">
+            <img class="place-photo" data-slot="1" alt="Classic destination view 2" loading="lazy" />
+            <figcaption>Landmark Architecture</figcaption>
+          </figure>
+          <figure class="shot tilt-c">
+            <img class="place-photo" data-slot="2" alt="Classic destination view 3" loading="lazy" />
+            <figcaption>Sunset Cityline</figcaption>
+          </figure>
+          <figure class="shot tilt-b">
+            <img class="place-photo" data-slot="3" alt="Classic destination view 4" loading="lazy" />
+            <figcaption>Market Streets</figcaption>
+          </figure>
+          <figure class="shot tilt-a">
+            <img class="place-photo" data-slot="4" alt="Classic destination view 5" loading="lazy" />
+            <figcaption>Coastal Corners</figcaption>
+          </figure>
+          <figure class="shot tilt-c">
+            <img class="place-photo" data-slot="5" alt="Classic destination view 6" loading="lazy" />
+            <figcaption>Heritage Moments</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="results" class="results hidden"></section>
+    </main>
+
+    <script src="hindex.js"></script>
+  </body>
+</html>
