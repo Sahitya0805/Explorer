@@ -114,10 +114,7 @@ function getDynamicImage(query, seed) {
   return `<img src="${primary}" alt="${query}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'" />`;
 }
 
-function imageSrcFromMarkup(markup) {
-  const match = String(markup || "").match(/src="([^"]+)"/);
-  return match ? match[1] : "";
-}
+
 
 function downloadItineraryFile(input, plan) {
   if (!input || !plan) return;
@@ -126,7 +123,7 @@ function downloadItineraryFile(input, plan) {
     .map(
       (hotel) => `
       <article class="mini">
-        <img src="${imageSrcFromMarkup(hotel.image)}" alt="${hotel.name}">
+        ${hotel.image}
         <h4>${hotel.name}</h4>
         <p>${hotel.adv}</p>
         <p>${hotel.price}/night · ${hotel.rating}</p>
@@ -140,7 +137,7 @@ function downloadItineraryFile(input, plan) {
     .map(
       (restaurant) => `
       <article class="mini">
-        <img src="${imageSrcFromMarkup(restaurant.image)}" alt="${restaurant.name}">
+        ${restaurant.image}
         <h4>${restaurant.name}</h4>
         <p>Veg: ${restaurant.veg}</p>
         <p>Non-veg: ${restaurant.nonVeg}</p>
@@ -155,7 +152,7 @@ function downloadItineraryFile(input, plan) {
     .map(
       (day) => `
       <article class="mini">
-        <img src="${imageSrcFromMarkup(day.image)}" alt="Day ${day.day} place">
+        ${day.image}
         <h4>Day ${day.day}: ${day.title}</h4>
         <p>Timings: ${day.timings}</p>
         <p>Must visit: ${day.places.join(", ")}</p>
