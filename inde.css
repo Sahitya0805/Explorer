@@ -2,7 +2,7 @@
   --bg-1: #140725;
   --bg-2: #071825;
   --bg-3: #062010;
-  --card: transparent;
+  --card: rgba(8, 10, 28, 0.58);
   --line: rgba(255, 255, 255, 0.3);
   --text: #f3f4ff;
   --muted: #bec4ef;
@@ -109,8 +109,7 @@ p {
   gap: 0.5rem;
   margin-bottom: 1rem;
   padding: 0.45rem 0.55rem;
-  position: sticky;
-  top: 10px;
+  position: relative;
   z-index: 20;
 }
 
@@ -185,7 +184,8 @@ p {
 .card {
   border: 1px solid var(--line);
   background: var(--card);
-  backdrop-filter: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 22px;
   box-shadow: none;
 }
@@ -570,4 +570,203 @@ input:focus {
   .orb {
     display: none;
   }
+}
+
+/* ---------- Real-data planner additions ---------- */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+.planner-status {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(71, 183, 255, 0.12);
+  color: #dfefff;
+}
+
+.planner-status[data-tone="error"] {
+  background: rgba(255, 99, 99, 0.16);
+  border-color: rgba(255, 120, 120, 0.55);
+  color: #ffe1e1;
+}
+
+.planner-status[data-tone="warn"] {
+  background: rgba(255, 154, 60, 0.16);
+  border-color: rgba(255, 170, 90, 0.5);
+  color: #ffe9d4;
+}
+
+.weather-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+}
+
+.weather-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.weather-chip.muted,
+.muted {
+  color: var(--muted);
+}
+
+.day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.day-head h4 {
+  margin: 0;
+}
+
+.day-food {
+  margin-top: 0.6rem;
+  color: #dfebff;
+}
+
+.place-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.7rem;
+}
+
+.place-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.place-card:hover,
+.place-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--neon-mint);
+  outline: none;
+}
+
+.place-card p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.place-card img,
+.img-placeholder {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 0.55rem;
+}
+
+.img-placeholder {
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  background: linear-gradient(130deg, rgba(71, 183, 255, 0.25), rgba(37, 242, 178, 0.18));
+}
+
+.list {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  text-decoration: none;
+}
+
+.list-row span {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.list-row:hover,
+.list-row:focus-visible {
+  border-color: var(--neon-mint);
+  outline: none;
+}
+
+.map-link {
+  color: var(--neon-mint);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.map-link:hover {
+  text-decoration: underline;
+}
+
+.source-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.6rem;
+}
+
+.alt-places {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--neon-mint);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.shot.hidden {
+  display: none !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--neon-mint);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .place-card,
+  .bar-fill {
+    transition: none;
+    animation: none;
+  }
+}
+
+.loading-row {
+  animation: pulseText 1.4s ease-in-out infinite;
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
 }

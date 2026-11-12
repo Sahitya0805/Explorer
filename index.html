@@ -3,11 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Explorer AI Travel Planner</title>
+    <title>Explorer – Trip Planner with Real Places &amp; Weather</title>
+    <meta name="description" content="Plan a day-wise trip with real attractions, live weather forecasts, nearby stays and restaurants, and an INR budget. Download the full itinerary." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="inde.css" />
+    <link rel="stylesheet" href="inde.css?v=2" />
   </head>
   <body>
     <div class="bg-video-wrap">
@@ -34,24 +35,24 @@
 
       <section class="home card" id="home">
         <p class="eyebrow">WELCOME TO EXPLORER</p>
-        <h1>Smart travel planner with real visuals, INR budgets, and full itinerary downloads.</h1>
+        <h1>Plan a trip with real places, live weather and an INR budget.</h1>
         <p class="sub">
-          Explorer helps you plan your complete trip from one place: destination, days, budget, transport,
-          stays, restaurants, and day-wise schedule. You can switch animated background themes,
-          see destination visuals, and download a complete itinerary file with all trip details.
+          Type any destination and Explorer builds a day-wise plan from real data: notable places and photos
+          from Wikipedia, the forecast for your dates from Open-Meteo, and nearby stays and restaurants from
+          OpenStreetMap. Download the whole itinerary as one file.
         </p>
         <div class="home-grid">
           <article>
             <h3>What You Get</h3>
-            <p>Transport suggestion, hotel picks, restaurant picks, weather snapshot, and day-by-day activities.</p>
+            <p>Real attractions spread across your days, with nearby places to eat and stay.</p>
           </article>
           <article>
             <h3>Budget in INR</h3>
             <p>Everything is shown in rupees with clear budget breakdown for transport, stay, food, and activities.</p>
           </article>
           <article>
-            <h3>Visual Experience</h3>
-            <p>Destination photos across tourist places, hotels, and restaurants for a non-generic travel feel.</p>
+            <h3>Weather For Your Dates</h3>
+            <p>Daily forecast for up to 16 days ahead, with packing tips.</p>
           </article>
         </div>
         <div class="home-cta">
@@ -60,9 +61,9 @@
       </section>
 
       <section class="hero card" id="itinerary">
-        <p class="eyebrow">AI TRAVEL CONCIERGE</p>
+        <p class="eyebrow">TRIP PLANNER</p>
         <h1>Plan your full trip in seconds.</h1>
-        <p class="sub">Choose destination, days, and budget. Get transport, hotels, restaurants, and day-wise itinerary instantly.</p>
+        <p class="sub">Choose a destination, start date, days and budget. Add the state if the name is common, e.g. “Manali, Himachal”.</p>
 
         <form id="plannerForm" class="planner-form">
           <label class="field">
@@ -73,6 +74,11 @@
           <label class="field">
             <span>Number of Days</span>
             <input id="days" type="number" min="1" max="14" value="3" required />
+          </label>
+
+          <label class="field">
+            <span>Start Date</span>
+            <input id="startDate" type="date" required />
           </label>
 
           <div class="field">
@@ -101,12 +107,13 @@
 
           <button type="submit" class="generate-btn" id="generateBtn">Generate Travel Plan</button>
         </form>
+        <p id="plannerStatus" class="planner-status hidden" role="status" aria-live="polite"></p>
       </section>
 
       <section class="photo-wall card" id="photoWall">
         <div class="photo-head">
-          <p class="eyebrow">CLASSIC DESTINATIONS</p>
-          <h2>Real-world place moodboard</h2>
+          <p class="eyebrow">PHOTOS FROM WIKIPEDIA</p>
+          <h2>Places worth seeing</h2>
         </div>
         <div class="photo-grid">
           <figure class="shot tilt-a">
@@ -139,6 +146,6 @@
       <section id="results" class="results hidden"></section>
     </main>
 
-    <script src="hindex.js"></script>
+    <script src="hindex.js?v=2"></script>
   </body>
 </html>
