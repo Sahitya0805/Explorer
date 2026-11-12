@@ -1,0 +1,9 @@
+{
+  "name": "explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Trip planner with real places, live weather and an INR budget.",
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

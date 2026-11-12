@@ -1,3 +1,21 @@
+const {
+  WEATHER_CODES,
+  escapeHtml,
+  todayIso,
+  addDays,
+  formatDate,
+  getTotalBudget,
+  planBudget,
+  suggestTransport,
+  placeLabel,
+  filterGeocodeResults,
+  selectAttractions,
+  weatherNote,
+  buildItinerary,
+  encodeShare,
+  decodeShare
+} = window.PlannerCore;
+
 const form = document.getElementById("plannerForm");
 const results = document.getElementById("results");
 const generateBtn = document.getElementById("generateBtn");
@@ -95,12 +113,6 @@ pick("modeChips", "mode", (value) => {
   mode = value;
 });
 
-function getTotalBudget(days, tier, custom) {
-  if (tier === "custom") return Math.max(custom || 0, 5000);
-  if (tier === "low") return days * 3500;
-  if (tier === "medium") return days * 7000;
-  return days * 14000;
-}
 
 function money(value) {
   return `₹${Number(value).toLocaleString("en-IN")}`;
@@ -120,28 +132,8 @@ const OVERPASS_ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
   "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 ];
-const NOT_ATTRACTION =
-  /constituency|village|town in|city in|capital of|district|tehsil|taluk|census|municipal|human settlement|railway|station|airport|school|college|university|institute|hospital|highway|road|bridge|company|neighbourhood|suburb|locality|ward|historical region|region of|division of/i;
 
-const WEATHER_CODES = {
-  0: ["Clear sky", "☀️"], 1: ["Mostly clear", "🌤️"], 2: ["Partly cloudy", "⛅"], 3: ["Overcast", "☁️"],
-  45: ["Fog", "🌫️"], 48: ["Fog", "🌫️"],
-  51: ["Light drizzle", "🌦️"], 53: ["Drizzle", "🌦️"], 55: ["Heavy drizzle", "🌧️"],
-  61: ["Light rain", "🌦️"], 63: ["Rain", "🌧️"], 65: ["Heavy rain", "🌧️"],
-  71: ["Light snow", "🌨️"], 73: ["Snow", "🌨️"], 75: ["Heavy snow", "❄️"], 77: ["Snow grains", "🌨️"],
-  80: ["Rain showers", "🌦️"], 81: ["Rain showers", "🌧️"], 82: ["Violent showers", "⛈️"],
-  85: ["Snow showers", "🌨️"], 86: ["Heavy snow showers", "❄️"],
-  95: ["Thunderstorm", "⛈️"], 96: ["Thunderstorm with hail", "⛈️"], 99: ["Thunderstorm with hail", "⛈️"]
-};
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 function setStatus(message, tone = "info") {
   if (!statusBox) return;
@@ -162,50 +154,18 @@ async function fetchJson(url, options = {}, timeoutMs = 15000) {
   }
 }
 
-function todayIso() {
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 10);
-}
 
-function addDays(iso, n) {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + n);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 10);
-}
 
-function formatDate(iso) {
-  return new Date(`${iso}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-}
 
 /* ---------- Geocoding with sensible disambiguation ---------- */
 
 async function geocode(query) {
-  const [namePart, ...regionParts] = query.split(",").map((part) => part.trim()).filter(Boolean);
-  const region = regionParts.join(" ").toLowerCase();
+  const namePart = query.split(",")[0].trim();
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(namePart)}&count=8&language=en&format=json`;
   const data = await fetchJson(url);
-  let results = (data.results || []).filter((r) => typeof r.latitude === "number");
-  if (region) {
-    const matching = results.filter((r) =>
-      [r.admin1, r.admin2, r.country].some((field) => field && field.toLowerCase().includes(region))
-    );
-    if (matching.length) results = matching;
-  }
-  // Drop near-duplicates (same name and state)
-  const seen = new Set();
-  return results.filter((r) => {
-    const key = `${r.name}|${r.admin1}|${r.country}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return filterGeocodeResults(data.results, query);
 }
 
-function placeLabel(place) {
-  return [place.name, place.admin1, place.country].filter(Boolean).join(", ");
-}
 
 /* ---------- Notable places from Wikipedia ---------- */
 
@@ -214,20 +174,9 @@ async function fetchNearbyPlaces(place) {
     "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
     "&generator=geosearch&ggsradius=10000&ggslimit=40" +
     `&ggscoord=${place.latitude}%7C${place.longitude}` +
-    "&prop=pageimages%7Cdescription&piprop=thumbnail&pithumbsize=640";
+    "&prop=pageimages%7Cdescription%7Ccoordinates&piprop=thumbnail&pithumbsize=640";
   const data = await fetchJson(url);
-  const pages = Object.values(data?.query?.pages || {});
-  const townName = place.name.toLowerCase();
-  return pages
-    .filter((page) => page.description && !NOT_ATTRACTION.test(page.description))
-    .filter((page) => !page.title.toLowerCase().startsWith(`${townName},`) && page.title.toLowerCase() !== townName)
-    .sort((a, b) => Number(Boolean(b.thumbnail)) - Number(Boolean(a.thumbnail)) || (a.index || 0) - (b.index || 0))
-    .map((page) => ({
-      name: page.title,
-      description: page.description,
-      image: page.thumbnail?.source || null,
-      url: `https://en.wikipedia.org/?curid=${page.pageid}`
-    }));
+  return selectAttractions(Object.values(data?.query?.pages || {}), place.name);
 }
 
 async function pickBestPlace(candidates) {
@@ -271,18 +220,6 @@ async function fetchWeather(place, startIso, days) {
   });
 }
 
-function weatherNote(daysWeather) {
-  const known = daysWeather.filter((d) => !d.unavailable);
-  if (!known.length) return "The forecast covers the next 16 days. Check again closer to your trip.";
-  const minT = Math.min(...known.map((d) => d.min));
-  const maxRain = Math.max(...known.map((d) => d.rain ?? 0));
-  const tips = [];
-  if (minT <= 5) tips.push("Pack warm layers — nights get close to freezing.");
-  else if (minT <= 15) tips.push("Carry a jacket for cool mornings and evenings.");
-  if (maxRain >= 60) tips.push("Rain is likely on some days, so keep an umbrella and an indoor backup plan.");
-  if (!tips.length) tips.push("Weather looks comfortable for sightseeing.");
-  return tips.join(" ");
-}
 
 /* ---------- Hotels and restaurants from OpenStreetMap ---------- */
 
@@ -329,38 +266,8 @@ async function fetchOsmPlaces(place) {
 
 /* ---------- Plan assembly ---------- */
 
-function buildItinerary(days, places, food, weather, destination) {
-  const perDay = Math.max(1, Math.min(3, Math.ceil(places.length / days) || 1));
-  return Array.from({ length: days }, (_, i) => {
-    const todaysPlaces = places.slice(i * perDay, i * perDay + perDay);
-    const todaysFood = food.length ? [food[(i * 2) % food.length], food[(i * 2 + 1) % food.length]] : [];
-    const first = i === 0;
-    const last = i === days - 1 && days > 1;
-    return {
-      day: i + 1,
-      weather: weather[i],
-      title: first ? "Arrive and settle in" : last ? "Last sights and departure" : todaysPlaces.length ? "Explore nearby highlights" : "Free day",
-      places: todaysPlaces,
-      freeTime: todaysPlaces.length === 0 ? `Explore ${destination} at your own pace — markets, cafés and walks.` : null,
-      food: [...new Map(todaysFood.map((f) => [f.name, f])).values()]
-    };
-  });
-}
 
-function planBudget(days, tier, custom) {
-  const total = getTotalBudget(days, tier, custom);
-  const transport = Math.round(total * 0.2);
-  const stay = Math.round(total * 0.4);
-  const food = Math.round(total * 0.22);
-  const activities = Math.max(total - transport - stay - food, 0);
-  return { transport, stay, food, activities, total, perNight: Math.round(stay / days) };
-}
 
-function suggestTransport(tier, modeType) {
-  if (tier === "high" || modeType === "luxury") return { mode: "Flight + cab", reason: "Fastest option for a higher budget." };
-  if (tier === "low") return { mode: "Train or state bus", reason: "Cheapest way to travel long distances in India." };
-  return { mode: "Train, bus or shared cab", reason: "A balance of cost and comfort." };
-}
 
 /* ---------- Rendering ---------- */
 
@@ -450,7 +357,10 @@ function renderPlan(input, plan) {
         <p>${input.days}-day ${escapeHtml(input.modeType)} trip from ${escapeHtml(formatDate(input.startDate))} · ${escapeHtml(input.tier)} budget</p>
         ${otherPlaces}
       </div>
-      <button class="print-btn" id="downloadBtn" type="button">Download Itinerary</button>
+      <div class="results-actions">
+        <button class="print-btn" id="shareBtn" type="button">Share Trip</button>
+        <button class="print-btn" id="downloadBtn" type="button">Download Itinerary</button>
+      </div>
     </div>
 
     <div class="grid2">
@@ -467,6 +377,16 @@ function renderPlan(input, plan) {
         <p class="source-note">Suggested travel: ${escapeHtml(plan.transport.mode)} — ${escapeHtml(plan.transport.reason)}</p>
       </article>
     </div>
+
+    <article class="section card" id="mapCard">
+      <h3>Trip map</h3>
+      <div id="tripMap" class="trip-map" role="region" aria-label="Map of the places in this trip"></div>
+      <div class="map-legend">${plan.itinerary
+        .filter((d) => d.places.some((p) => p.lat != null))
+        .map((d) => `<span class="legend-item"><span class="day-pin day-${((d.day - 1) % 7) + 1}">${d.day}</span>Day ${d.day}</span>`)
+        .join("")}</div>
+      <p class="source-note">Map data © OpenStreetMap contributors</p>
+    </article>
 
     <article class="section card">
       <h3>Day-wise itinerary</h3>
@@ -493,6 +413,8 @@ function renderPlan(input, plan) {
   results.classList.remove("hidden");
 
   document.getElementById("downloadBtn").addEventListener("click", () => downloadItineraryFile(input, plan));
+  document.getElementById("shareBtn").addEventListener("click", () => shareTrip(input, plan));
+  renderMap(plan);
   results.querySelectorAll("[data-retry-osm]").forEach((btn) => {
     btn.addEventListener("click", () => loadOsmInto(input, plan));
   });
@@ -502,6 +424,71 @@ function renderPlan(input, plan) {
       generatePlan({ ...input, forcedPlace: alt.raw });
     });
   });
+}
+
+let tripMap = null;
+
+function renderMap(plan) {
+  const card = document.getElementById("mapCard");
+  const el = document.getElementById("tripMap");
+  if (tripMap) {
+    tripMap.remove();
+    tripMap = null;
+  }
+  if (!card || !el) return;
+  if (!window.L) {
+    card.classList.add("hidden");
+    return;
+  }
+
+  tripMap = L.map(el, { scrollWheelZoom: false });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(tripMap);
+
+  const points = [];
+  plan.itinerary.forEach((d) => {
+    d.places.forEach((p) => {
+      if (p.lat == null || p.lon == null) return;
+      const icon = L.divIcon({
+        className: "",
+        html: `<span class="day-pin day-${((d.day - 1) % 7) + 1}">${d.day}</span>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+      L.marker([p.lat, p.lon], { icon, title: p.name })
+        .addTo(tripMap)
+        .bindPopup(`<strong>${escapeHtml(p.name)}</strong><br>Day ${d.day} · ${escapeHtml(p.description)}<br><a href="${escapeHtml(p.url)}" target="_blank" rel="noopener">Wikipedia ↗</a>`);
+      points.push([p.lat, p.lon]);
+    });
+  });
+
+  if (points.length) {
+    tripMap.fitBounds(points, { padding: [30, 30], maxZoom: 14 });
+  } else {
+    tripMap.setView([plan.place.latitude, plan.place.longitude], 12);
+  }
+}
+
+function shareUrl(input, plan) {
+  return `${window.location.origin}${window.location.pathname}?${encodeShare(input, plan.place)}`;
+}
+
+async function shareTrip(input, plan) {
+  const url = shareUrl(input, plan);
+  const title = `${input.days}-day trip to ${plan.place.name}`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, text: `${title} — planned with Explorer`, url });
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    setStatus("Trip link copied. Anyone with the link sees the same plan.");
+  } catch (error) {
+    if (error && error.name === "AbortError") return; // user closed the share sheet
+    setStatus(`Copy this link to share your trip: ${url}`);
+  }
 }
 
 function renderPhotoWall(places) {
@@ -637,6 +624,11 @@ async function generatePlan(input) {
 
     latestInput = input;
     latestPlan = plan;
+    try {
+      window.history.replaceState(null, "", `?${encodeShare(input, plan.place)}`);
+    } catch {
+      // ignore: some embedded viewers block history changes
+    }
     renderPlan(input, plan);
     renderPhotoWall(chosen.places);
     setStatus("");
@@ -678,28 +670,41 @@ if (startDateInput) {
   if (!startDateInput.value) startDateInput.value = todayIso();
 }
 
-(function loadFromSession() {
+function applyInputToForm(data) {
+  document.getElementById("destination").value = data.destination || "";
+  document.getElementById("days").value = String(data.days || 3);
+  if (data.startDate && startDateInput && data.startDate >= todayIso()) startDateInput.value = data.startDate;
+  if (data.tier) {
+    budgetTier = data.tier;
+    document.querySelectorAll("#budgetChips .chip").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.budget === data.tier);
+    });
+    customBudgetWrap.classList.toggle("hidden", data.tier !== "custom");
+  }
+  if (data.custom) document.getElementById("customBudget").value = String(data.custom);
+  if (data.modeType) {
+    mode = data.modeType;
+    document.querySelectorAll("#modeChips .chip").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.mode === data.modeType);
+    });
+  }
+}
+
+(function loadSharedOrSavedTrip() {
+  // 1. A shared trip link (?to=...) opens that exact plan.
+  const shared = decodeShare(window.location.search, todayIso());
+  if (shared) {
+    applyInputToForm(shared);
+    const { place, ...input } = shared;
+    generatePlan(place ? { ...input, forcedPlace: place } : input);
+    return;
+  }
+
+  // 2. Otherwise restore the last form values from this browser tab.
   const raw = sessionStorage.getItem("trip-input");
   if (!raw) return;
   try {
-    const data = JSON.parse(raw);
-    document.getElementById("destination").value = data.destination || "";
-    document.getElementById("days").value = String(data.days || 3);
-    if (data.startDate && startDateInput && data.startDate >= todayIso()) startDateInput.value = data.startDate;
-    if (data.tier) {
-      budgetTier = data.tier;
-      document.querySelectorAll("#budgetChips .chip").forEach((chip) => {
-        chip.classList.toggle("active", chip.dataset.budget === data.tier);
-      });
-      customBudgetWrap.classList.toggle("hidden", data.tier !== "custom");
-    }
-    if (data.custom) document.getElementById("customBudget").value = String(data.custom);
-    if (data.modeType) {
-      mode = data.modeType;
-      document.querySelectorAll("#modeChips .chip").forEach((chip) => {
-        chip.classList.toggle("active", chip.dataset.mode === data.modeType);
-      });
-    }
+    applyInputToForm(JSON.parse(raw));
   } catch {
     sessionStorage.removeItem("trip-input");
   }
