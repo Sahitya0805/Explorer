@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="inde.css?v=5" />
+    <link rel="stylesheet" href="inde.css?v=6" />
   </head>
   <body>
     <div class="bg-video-wrap">
@@ -37,9 +37,8 @@
 
 
       <section class="hero card" id="itinerary">
-        <p class="eyebrow">TRIP PLANNER</p>
-        <h1>Plan your full trip in seconds.</h1>
-        <p class="sub">Choose a destination, start date, days and budget. Add the state if the name is common, e.g. “Manali, Himachal”.</p>
+        <h1>Where are you going?</h1>
+        <p class="sub">Type a town or city, pick your dates and budget, and you’ll get a day-by-day plan with real places, the weather and somewhere to stay.</p>
 
         <form id="plannerForm" class="planner-form">
           <div class="field destination-field">
@@ -50,17 +49,17 @@
           </div>
 
           <label class="field">
-            <span>Number of Days</span>
+            <span>How many days</span>
             <input id="days" type="number" min="1" max="14" value="3" required />
           </label>
 
           <label class="field">
-            <span>Start Date</span>
+            <span>Starting on</span>
             <input id="startDate" type="date" required />
           </label>
 
           <div class="field">
-            <span>Budget Range</span>
+            <span>Budget</span>
             <div class="chips" id="budgetChips">
               <button type="button" class="chip active" data-budget="low">Low</button>
               <button type="button" class="chip" data-budget="medium">Medium</button>
@@ -70,12 +69,12 @@
           </div>
 
           <label class="field hidden" id="customBudgetWrap">
-            <span>Custom Budget (INR)</span>
+            <span>Your budget (₹)</span>
             <input id="customBudget" type="number" min="5000" placeholder="50000" />
           </label>
 
           <div class="field">
-            <span>Mode</span>
+            <span>Trip style</span>
             <div class="chips" id="modeChips">
               <button type="button" class="chip active" data-mode="balanced">Balanced</button>
               <button type="button" class="chip" data-mode="luxury">Luxury</button>
@@ -83,7 +82,7 @@
             </div>
           </div>
 
-          <button type="submit" class="generate-btn" id="generateBtn">Generate Travel Plan</button>
+          <button type="submit" class="generate-btn" id="generateBtn">Plan my trip</button>
         </form>
         <p id="plannerStatus" class="planner-status hidden" role="status" aria-live="polite"></p>
 
@@ -94,33 +93,23 @@
       </section>
 
       <section class="home card" id="home">
-        <p class="eyebrow">WELCOME TO EXPLORER</p>
-        <h1>Plan a trip with real places, live weather and an INR budget.</h1>
+        <h2>Where the plan comes from</h2>
         <p class="sub">
-          Type any destination and Explorer builds a day-wise plan from real data: notable places and photos
-          from Wikipedia, the forecast for your dates from Open-Meteo, and nearby stays and restaurants from
-          OpenStreetMap. Download the whole itinerary as one file.
+          Nothing here is made up. The sights and photos come from Wikipedia, the forecast from Open-Meteo,
+          and the hotels and places to eat from OpenStreetMap. The budget is a rough split of what you enter,
+          so treat it as a starting point, not a quote.
         </p>
-        <div class="home-grid">
-          <article>
-            <h3>What You Get</h3>
-            <p>Real attractions spread across your days, with nearby places to eat and stay.</p>
-          </article>
-          <article>
-            <h3>Budget in INR</h3>
-            <p>Everything is shown in rupees with clear budget breakdown for transport, stay, food, and activities.</p>
-          </article>
-          <article>
-            <h3>Weather For Your Dates</h3>
-            <p>Daily forecast for up to 16 days ahead, with packing tips.</p>
-          </article>
-        </div>
+        <ul class="source-list">
+          <li><strong>Sights</strong> within 10 km, a few per day, each linking to its Wikipedia page</li>
+          <li><strong>Weather</strong> for each day of the trip, up to 16 days ahead</li>
+          <li><strong>Stays and food</strong> nearby, with a Google Maps link to compare prices</li>
+          <li><strong>A packing list</strong> based on that forecast</li>
+        </ul>
       </section>
 
       <section class="photo-wall card" id="photoWall">
         <div class="photo-head">
-          <p class="eyebrow">PHOTOS FROM WIKIPEDIA</p>
-          <h2>Places worth seeing</h2>
+          <h2>A few places people plan for</h2>
         </div>
         <div class="photo-grid">
           <figure class="shot tilt-a">
@@ -154,7 +143,7 @@
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="planner-core.js?v=3"></script>
-    <script src="hindex.js?v=5"></script>
+    <script src="planner-core.js?v=4"></script>
+    <script src="hindex.js?v=6"></script>
   </body>
 </html>

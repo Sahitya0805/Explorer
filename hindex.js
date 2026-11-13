@@ -284,8 +284,8 @@ function placeCard(p) {
 
 function weatherChip(w) {
   if (!w || w.unavailable) return `<span class="weather-chip muted">${w && w.failed ? "Forecast didn't load" : "Forecast not out yet"}</span>`;
-  const [label, icon] = WEATHER_CODES[w.code] || ["—", "🌡️"];
-  return `<span class="weather-chip">${icon} ${escapeHtml(label)} · ${w.min}–${w.max}°C${w.rain != null ? ` · ${w.rain}% rain` : ""}</span>`;
+  const [label] = WEATHER_CODES[w.code] || ["—"];
+  return `<span class="weather-chip">${escapeHtml(label)}, ${String(w.min).replace("-", "−")}° to ${String(w.max).replace("-", "−")}°C${w.rain ? `, ${w.rain}% rain` : ""}</span>`;
 }
 
 function renderPlan(input, plan) {
@@ -368,13 +368,13 @@ function renderPlan(input, plan) {
 
     <div class="grid2">
       <article class="section card">
-        <h3>Weather for your dates</h3>
+        <h3>Weather</h3>
         <div class="weather-strip">${plan.weather.map(weatherChip).join("")}</div>
         <p>${escapeHtml(plan.weatherNote)}</p>
         <p class="source-note">Source: Open-Meteo forecast</p>
       </article>
       <article class="section card">
-        <h3>Budget estimate</h3>
+        <h3>Rough budget</h3>
         <p>Estimated total: <strong>${money(plan.budget.total)}</strong> · about ${money(plan.budget.perNight)} per night for stays</p>
         <div class="bars">${bars}</div>
         <p class="source-note">Suggested travel: ${escapeHtml(plan.transport.mode)} — ${escapeHtml(plan.transport.reason)}</p>
@@ -391,7 +391,7 @@ function renderPlan(input, plan) {
     </article>
 
     <article class="section card" id="mapCard">
-      <h3>Trip map</h3>
+      <h3>Map</h3>
       <div id="tripMap" class="trip-map" role="region" aria-label="Map of the places in this trip"></div>
       <div class="map-legend">${plan.itinerary
         .filter((d) => d.places.some((p) => p.lat != null))
@@ -401,7 +401,7 @@ function renderPlan(input, plan) {
     </article>
 
     <article class="section card">
-      <h3>Day-wise itinerary</h3>
+      <h3>Day by day</h3>
       ${plan.places.length ? "" : `<p class="muted">Wikipedia lists few notable places near here, so the plan keeps days flexible.</p>`}
       <div class="timeline">${daysHtml}</div>
       <p class="source-note">Places and photos: Wikipedia</p>
@@ -409,12 +409,12 @@ function renderPlan(input, plan) {
 
     <div class="grid2">
       <article class="section card">
-        <h3>Places to stay nearby</h3>
+        <h3>Where to stay</h3>
         <div class="list">${staysHtml}</div>
         <a class="map-link" href="${mapSearch("hotels")}" target="_blank" rel="noopener">See prices and reviews on Google Maps ↗</a>
       </article>
       <article class="section card">
-        <h3>Places to eat nearby</h3>
+        <h3>Where to eat</h3>
         <div class="list">${foodHtml}</div>
         <a class="map-link" href="${mapSearch("restaurants")}" target="_blank" rel="noopener">See more on Google Maps ↗</a>
       </article>
@@ -585,7 +585,7 @@ function saveTrip(input, plan) {
   writeJson(SAVED_TRIPS_KEY, addSavedTrip(readJson(SAVED_TRIPS_KEY, []), trip));
   updateSaveButton(input, plan);
   renderSavedTrips();
-  setStatus("Trip saved. Find it under “My saved trips” above the planner.");
+  setStatus("Saved. It’s under “My saved trips” in the planner.");
 }
 
 function renderSavedTrips() {

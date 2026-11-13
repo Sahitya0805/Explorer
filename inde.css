@@ -1008,3 +1008,97 @@ input:focus-visible {
   .planner-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* =========================================================
+   Plainer pass: smaller corners, flat buttons, no glows,
+   a plain wordmark and simple lists instead of colour tiles.
+   ========================================================= */
+:root {
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(20, 33, 61, 0.06);
+  --shadow-lg: 0 8px 24px rgba(20, 33, 61, 0.12);
+}
+
+.brand::before {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--coral);
+  transform: none;
+}
+
+.top-nav {
+  border-radius: 12px;
+}
+
+.nav-links a {
+  border-radius: 8px;
+}
+
+.hero {
+  box-shadow: var(--shadow-lg);
+}
+
+.generate-btn,
+.submit-btn {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.generate-btn:hover {
+  transform: none;
+}
+
+.print-btn {
+  border-radius: 8px;
+}
+
+.home h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.source-list {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+  color: var(--ink-soft);
+}
+
+.source-list strong {
+  color: var(--ink);
+}
+
+.saved-trip a::before {
+  content: none;
+}
+
+.shot:hover,
+.place-card:hover,
+.place-card:focus-visible {
+  transform: none;
+}
+
+.place-card:hover,
+.place-card:focus-visible {
+  border-color: var(--ink);
+  box-shadow: none;
+}
+
+.weather-chip {
+  border-radius: 6px;
+}
+
+.packing-progress {
+  border-radius: 6px;
+}
+
+.bar-fill,
+.bars > div:nth-child(2) .bar-fill,
+.bars > div:nth-child(3) .bar-fill,
+.bars > div:nth-child(4) .bar-fill {
+  background: var(--ink);
+}
+
+.bars > div:nth-child(1) .bar-fill { background: var(--coral); }
