@@ -60,6 +60,7 @@ test("weather tips react to cold and rain", () => {
   assert.match(core.weatherNote([{ min: 2, max: 10, rain: 80 }]), /warm layers.*umbrella/);
   assert.match(core.weatherNote([{ min: 20, max: 28, rain: 5 }]), /comfortable/);
   assert.match(core.weatherNote([{ unavailable: true }]), /16 days/);
+  assert.match(core.weatherNote([{ unavailable: true, failed: true }]), /Couldn't load/);
 });
 
 test("share links round-trip the trip and the exact place", () => {

@@ -117,6 +117,9 @@
 
   function weatherNote(daysWeather) {
     const known = (daysWeather || []).filter((d) => !d.unavailable);
+    if (!known.length && (daysWeather || []).some((d) => d.failed)) {
+      return "Couldn't load the forecast right now. Plan again in a moment to get it.";
+    }
     if (!known.length) return "The forecast covers the next 16 days. Check again closer to your trip.";
     const minT = Math.min(...known.map((d) => d.min));
     const maxRain = Math.max(...known.map((d) => d.rain ?? 0));

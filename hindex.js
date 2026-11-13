@@ -283,7 +283,7 @@ function placeCard(p) {
 }
 
 function weatherChip(w) {
-  if (!w || w.unavailable) return `<span class="weather-chip muted">Forecast not out yet</span>`;
+  if (!w || w.unavailable) return `<span class="weather-chip muted">${w && w.failed ? "Forecast didn't load" : "Forecast not out yet"}</span>`;
   const [label, icon] = WEATHER_CODES[w.code] || ["—", "🌡️"];
   return `<span class="weather-chip">${icon} ${escapeHtml(label)} · ${w.min}–${w.max}°C${w.rain != null ? ` · ${w.rain}% rain` : ""}</span>`;
 }
@@ -746,7 +746,7 @@ function downloadItineraryFile(input, plan) {
     .map((d) => `
       <section class="card">
         <h3>Day ${d.day} · ${escapeHtml(formatDate(d.weather.date))}: ${escapeHtml(d.title)}</h3>
-        <p class="muted">${d.weather.unavailable ? "Forecast not out yet" : `${escapeHtml((WEATHER_CODES[d.weather.code] || ["—"])[0])}, ${d.weather.min}–${d.weather.max}°C`}</p>
+        <p class="muted">${d.weather.unavailable ? (d.weather.failed ? "Forecast didn't load" : "Forecast not out yet") : `${escapeHtml((WEATHER_CODES[d.weather.code] || ["—"])[0])}, ${d.weather.min}–${d.weather.max}°C`}</p>
         ${d.places.map((p) => `<div class="place">${p.image ? `<img src="${escapeHtml(p.image)}" alt="">` : ""}<div><strong>${escapeHtml(p.name)}</strong><br><span class="muted">${escapeHtml(p.description)}</span></div></div>`).join("")}
         ${d.freeTime ? `<p>${escapeHtml(d.freeTime)}</p>` : ""}
         ${d.food.length ? `<p><strong>Eat nearby:</strong> ${d.food.map((f) => escapeHtml(f.name)).join(", ")}</p>` : ""}
@@ -838,7 +838,7 @@ async function generatePlan(input) {
     const place = chosen.place;
     setStatus("Checking the weather for your dates…");
     const weather = await fetchWeather(place, input.startDate, input.days).catch(() =>
-      Array.from({ length: input.days }, (_, i) => ({ date: addDays(input.startDate, i), unavailable: true }))
+      Array.from({ length: input.days }, (_, i) => ({ date: addDays(input.startDate, i), unavailable: true, failed: true }))
     );
 
     const plan = {
