@@ -6,6 +6,10 @@ A trip planner that turns any destination, start date, number of days and budget
 
 **Live demo:** https://explorer-ochre.vercel.app
 
+## Screenshot
+
+![Explorer trip planner](docs/screenshots/planner.jpg)
+
 ## Features
 
 - **Finds the right place** – looks the destination up with the Open-Meteo geocoding API, ranks same-name matches by how many notable places are nearby (so "Manali" means the Himachal hill station), and offers the others under "Not this place?". Typing "Manali, Himachal" narrows it by state.
