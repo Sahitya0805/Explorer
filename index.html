@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <link rel="stylesheet" href="inde.css?v=3" />
+    <link rel="stylesheet" href="inde.css?v=4" />
   </head>
   <body>
     <div class="bg-video-wrap">
@@ -34,32 +34,6 @@
       <div class="orb orb-b"></div>
       <div class="orb orb-c"></div>
 
-      <section class="home card" id="home">
-        <p class="eyebrow">WELCOME TO EXPLORER</p>
-        <h1>Plan a trip with real places, live weather and an INR budget.</h1>
-        <p class="sub">
-          Type any destination and Explorer builds a day-wise plan from real data: notable places and photos
-          from Wikipedia, the forecast for your dates from Open-Meteo, and nearby stays and restaurants from
-          OpenStreetMap. Download the whole itinerary as one file.
-        </p>
-        <div class="home-grid">
-          <article>
-            <h3>What You Get</h3>
-            <p>Real attractions spread across your days, with nearby places to eat and stay.</p>
-          </article>
-          <article>
-            <h3>Budget in INR</h3>
-            <p>Everything is shown in rupees with clear budget breakdown for transport, stay, food, and activities.</p>
-          </article>
-          <article>
-            <h3>Weather For Your Dates</h3>
-            <p>Daily forecast for up to 16 days ahead, with packing tips.</p>
-          </article>
-        </div>
-        <div class="home-cta">
-          <a href="#itinerary" class="home-btn">Go To Itinerary Planner</a>
-        </div>
-      </section>
 
       <section class="hero card" id="itinerary">
         <p class="eyebrow">TRIP PLANNER</p>
@@ -67,10 +41,12 @@
         <p class="sub">Choose a destination, start date, days and budget. Add the state if the name is common, e.g. “Manali, Himachal”.</p>
 
         <form id="plannerForm" class="planner-form">
-          <label class="field">
-            <span>Destination</span>
-            <input id="destination" type="text" required placeholder="e.g. Bali, Kyoto, Manali" />
-          </label>
+          <div class="field destination-field">
+            <label for="destination">Destination</label>
+            <input id="destination" type="text" required autocomplete="off" placeholder="e.g. Manali, Jaipur, Kyoto"
+              role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="destSuggestions" />
+            <ul id="destSuggestions" class="suggestions hidden" role="listbox" aria-label="Matching places"></ul>
+          </div>
 
           <label class="field">
             <span>Number of Days</span>
@@ -109,6 +85,35 @@
           <button type="submit" class="generate-btn" id="generateBtn">Generate Travel Plan</button>
         </form>
         <p id="plannerStatus" class="planner-status hidden" role="status" aria-live="polite"></p>
+
+        <div id="savedTrips" class="saved-trips hidden">
+          <h3>My saved trips</h3>
+          <ul id="savedTripsList" class="saved-trips-list"></ul>
+        </div>
+      </section>
+
+      <section class="home card" id="home">
+        <p class="eyebrow">WELCOME TO EXPLORER</p>
+        <h1>Plan a trip with real places, live weather and an INR budget.</h1>
+        <p class="sub">
+          Type any destination and Explorer builds a day-wise plan from real data: notable places and photos
+          from Wikipedia, the forecast for your dates from Open-Meteo, and nearby stays and restaurants from
+          OpenStreetMap. Download the whole itinerary as one file.
+        </p>
+        <div class="home-grid">
+          <article>
+            <h3>What You Get</h3>
+            <p>Real attractions spread across your days, with nearby places to eat and stay.</p>
+          </article>
+          <article>
+            <h3>Budget in INR</h3>
+            <p>Everything is shown in rupees with clear budget breakdown for transport, stay, food, and activities.</p>
+          </article>
+          <article>
+            <h3>Weather For Your Dates</h3>
+            <p>Daily forecast for up to 16 days ahead, with packing tips.</p>
+          </article>
+        </div>
       </section>
 
       <section class="photo-wall card" id="photoWall">
@@ -148,7 +153,7 @@
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="planner-core.js?v=1"></script>
-    <script src="hindex.js?v=3"></script>
+    <script src="planner-core.js?v=2"></script>
+    <script src="hindex.js?v=4"></script>
   </body>
 </html>

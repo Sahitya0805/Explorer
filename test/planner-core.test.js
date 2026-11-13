@@ -92,3 +92,25 @@ test("escapeHtml neutralises markup", () => {
 test("addDays crosses month boundaries", () => {
   assert.equal(core.addDays("2026-11-30", 1), "2026-12-01");
 });
+
+test("packing list reacts to cold, rain, heat and trip mode", () => {
+  const ids = (w, days, mode) => core.packingList(w, days, mode).map((i) => i.id);
+  const cold = ids([{ min: 2, max: 10, rain: 70, code: 73 }], 3, "adventure");
+  for (const id of ["thermals", "snow", "rain", "daypack", "torch", "id"]) assert.ok(cold.includes(id), id);
+  assert.ok(!cold.includes("sun"));
+  const hot = ids([{ min: 24, max: 36, rain: 0, code: 0 }], 2, "luxury");
+  for (const id of ["sun", "water", "outfit"]) assert.ok(hot.includes(id), id);
+  assert.ok(!hot.includes("jacket") && !hot.includes("thermals"));
+  const unknown = ids([{ unavailable: true }], 1, "balanced");
+  assert.ok(unknown.includes("clothes") && !unknown.includes("rain"));
+});
+
+test("saved trips: newest first, no duplicates, capped", () => {
+  let list = [];
+  for (let i = 0; i < 12; i++) list = core.addSavedTrip(list, { query: `q${i}`, label: `Trip ${i}` });
+  assert.equal(list.length, 10);
+  assert.equal(list[0].query, "q11");
+  list = core.addSavedTrip(list, { query: "q5", label: "Trip 5 again" });
+  assert.equal(list[0].label, "Trip 5 again");
+  assert.equal(list.filter((t) => t.query === "q5").length, 1);
+});

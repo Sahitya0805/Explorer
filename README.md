@@ -12,6 +12,9 @@ A trip planner that turns any destination, start date, number of days and budget
 - **Real attractions with photos** – notable places within 10 km from the Wikipedia GeoSearch API, spread across the days of the trip, each linking to its article.
 - **Trip map** – every attraction is pinned on an OpenStreetMap map (Leaflet), numbered and coloured by day, with popups linking to Wikipedia.
 - **Shareable trip links** – the URL always holds the trip (place, dates, days, budget, mode); "Share Trip" copies it or opens the phone's share sheet, and opening the link rebuilds the same plan.
+- **Destination suggestions** – matching places appear while typing (with keyboard support), so "Manali, Himachal Pradesh" and "Manali, Tamil Nadu" are easy to tell apart.
+- **Packing list** – built from the forecast for your dates (warm layers, rain gear, sun protection) and the trip mode; ticks are remembered on the device.
+- **My saved trips** – save a plan and reopen it later with one click.
 - **Weather for your dates** – daily forecast (up to 16 days ahead) from Open-Meteo, with packing tips based on temperature and rain chance.
 - **Stays and restaurants nearby** – real hotels, guest houses, restaurants and cafés from OpenStreetMap (Overpass API). Loaded in the background; if the public map service is busy, the app says so and links to Google Maps instead.
 - **Budget breakdown in INR** – transport, stay, food and activities for Low / Medium / High / Custom budgets, with a per-night stay budget.

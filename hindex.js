@@ -13,7 +13,9 @@ const {
   weatherNote,
   buildItinerary,
   encodeShare,
-  decodeShare
+  decodeShare,
+  packingList,
+  addSavedTrip
 } = window.PlannerCore;
 
 const form = document.getElementById("plannerForm");
@@ -359,6 +361,7 @@ function renderPlan(input, plan) {
       </div>
       <div class="results-actions">
         <button class="print-btn" id="shareBtn" type="button">Share Trip</button>
+        <button class="print-btn" id="saveTripBtn" type="button">Save Trip</button>
         <button class="print-btn" id="downloadBtn" type="button">Download Itinerary</button>
       </div>
     </div>
@@ -377,6 +380,15 @@ function renderPlan(input, plan) {
         <p class="source-note">Suggested travel: ${escapeHtml(plan.transport.mode)} — ${escapeHtml(plan.transport.reason)}</p>
       </article>
     </div>
+
+    <article class="section card packing-card">
+      <div class="packing-head">
+        <h3>Packing list</h3>
+        <span class="packing-progress" id="packingProgress"></span>
+      </div>
+      <p class="source-note">Built from your dates' forecast. Ticks are remembered on this device.</p>
+      <div class="packing-groups" id="packingList"></div>
+    </article>
 
     <article class="section card" id="mapCard">
       <h3>Trip map</h3>
@@ -414,6 +426,9 @@ function renderPlan(input, plan) {
 
   document.getElementById("downloadBtn").addEventListener("click", () => downloadItineraryFile(input, plan));
   document.getElementById("shareBtn").addEventListener("click", () => shareTrip(input, plan));
+  document.getElementById("saveTripBtn").addEventListener("click", () => saveTrip(input, plan));
+  updateSaveButton(input, plan);
+  renderPackingList(input, plan);
   renderMap(plan);
   results.querySelectorAll("[data-retry-osm]").forEach((btn) => {
     btn.addEventListener("click", () => loadOsmInto(input, plan));
@@ -489,6 +504,220 @@ async function shareTrip(input, plan) {
     if (error && error.name === "AbortError") return; // user closed the share sheet
     setStatus(`Copy this link to share your trip: ${url}`);
   }
+}
+
+/* ---------- Packing list ---------- */
+
+function packingKey(input, plan) {
+  return `explorer-packing:${plan.place.latitude.toFixed(2)},${plan.place.longitude.toFixed(2)}:${input.startDate}:${input.days}`;
+}
+
+function readJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage blocked or full: the page still works without it
+  }
+}
+
+function renderPackingList(input, plan) {
+  const container = document.getElementById("packingList");
+  const progress = document.getElementById("packingProgress");
+  if (!container) return;
+
+  const items = packingList(plan.weather, input.days, input.modeType);
+  const key = packingKey(input, plan);
+  const checked = new Set(readJson(key, []));
+  const groups = [...new Set(items.map((i) => i.group))];
+
+  container.innerHTML = groups
+    .map((group) => `
+      <div class="packing-group">
+        <h4>${escapeHtml(group)}</h4>
+        ${items
+          .filter((i) => i.group === group)
+          .map((i) => `
+            <label class="packing-item">
+              <input type="checkbox" data-id="${escapeHtml(i.id)}" ${checked.has(i.id) ? "checked" : ""} />
+              <span>${escapeHtml(i.label)}</span>
+            </label>`)
+          .join("")}
+      </div>`)
+    .join("");
+
+  const update = () => {
+    const done = [...container.querySelectorAll("input:checked")].map((el) => el.dataset.id);
+    writeJson(key, done);
+    if (progress) progress.textContent = `${done.length}/${items.length} packed`;
+  };
+  container.querySelectorAll("input").forEach((el) => el.addEventListener("change", update));
+  if (progress) progress.textContent = `${[...checked].filter((id) => items.some((i) => i.id === id)).length}/${items.length} packed`;
+}
+
+/* ---------- Saved trips ---------- */
+
+const SAVED_TRIPS_KEY = "explorer-saved-trips";
+
+function tripLabel(input, plan) {
+  return `${plan.place.name} · ${input.days} day${input.days > 1 ? "s" : ""} from ${formatDate(input.startDate)}`;
+}
+
+function updateSaveButton(input, plan) {
+  const btn = document.getElementById("saveTripBtn");
+  if (!btn) return;
+  const query = encodeShare(input, plan.place);
+  const saved = readJson(SAVED_TRIPS_KEY, []).some((t) => t.query === query);
+  btn.textContent = saved ? "Saved ✓" : "Save Trip";
+  btn.disabled = saved;
+}
+
+function saveTrip(input, plan) {
+  const trip = { query: encodeShare(input, plan.place), label: tripLabel(input, plan), savedAt: Date.now() };
+  writeJson(SAVED_TRIPS_KEY, addSavedTrip(readJson(SAVED_TRIPS_KEY, []), trip));
+  updateSaveButton(input, plan);
+  renderSavedTrips();
+  setStatus("Trip saved. Find it under “My saved trips” above the planner.");
+}
+
+function renderSavedTrips() {
+  const wrap = document.getElementById("savedTrips");
+  const list = document.getElementById("savedTripsList");
+  if (!wrap || !list) return;
+  const trips = readJson(SAVED_TRIPS_KEY, []);
+  wrap.classList.toggle("hidden", trips.length === 0);
+  list.innerHTML = trips
+    .map((t, i) => `
+      <li class="saved-trip">
+        <a href="?${escapeHtml(t.query)}">${escapeHtml(t.label)}</a>
+        <button type="button" class="link-btn" data-remove="${i}" aria-label="Remove ${escapeHtml(t.label)}">Remove</button>
+      </li>`)
+    .join("");
+  list.querySelectorAll("[data-remove]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const next = readJson(SAVED_TRIPS_KEY, []).filter((_, i) => i !== Number(btn.dataset.remove));
+      writeJson(SAVED_TRIPS_KEY, next);
+      renderSavedTrips();
+      if (latestInput && latestPlan) updateSaveButton(latestInput, latestPlan);
+    });
+  });
+}
+
+/* ---------- Loading placeholders ---------- */
+
+function renderSkeleton(days) {
+  const block = (cls) => `<div class="skeleton ${cls}"></div>`;
+  results.innerHTML = `
+    <div class="results-header">${block("sk-title")}</div>
+    <div class="grid2">
+      <article class="section card">${block("sk-line")}${block("sk-line short")}${block("sk-chips")}</article>
+      <article class="section card">${block("sk-line")}${block("sk-bar")}${block("sk-bar")}${block("sk-bar")}</article>
+    </div>
+    <article class="section card">${block("sk-map")}</article>
+    <article class="section card">
+      ${Array.from({ length: Math.min(days, 3) }, () => `${block("sk-line")}<div class="sk-row">${block("sk-photo")}${block("sk-photo")}${block("sk-photo")}</div>`).join("")}
+    </article>`;
+  results.classList.remove("hidden");
+  results.setAttribute("aria-busy", "true");
+}
+
+/* ---------- Destination suggestions ---------- */
+
+let pickedPlace = null;
+
+function setupDestinationSuggestions() {
+  const input = document.getElementById("destination");
+  const list = document.getElementById("destSuggestions");
+  if (!input || !list) return;
+  let timer = null;
+  let results = [];
+  let active = -1;
+  let requestId = 0;
+
+  const close = () => {
+    list.classList.add("hidden");
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    active = -1;
+  };
+
+  const choose = (index) => {
+    const place = results[index];
+    if (!place) return;
+    pickedPlace = place;
+    input.value = placeLabel(place);
+    close();
+  };
+
+  const highlight = (index) => {
+    active = index;
+    [...list.children].forEach((li, i) => li.setAttribute("aria-selected", String(i === index)));
+    if (index >= 0) input.setAttribute("aria-activedescendant", `dest-opt-${index}`);
+  };
+
+  const render = () => {
+    if (!results.length) return close();
+    list.innerHTML = results
+      .map((r, i) => `
+        <li id="dest-opt-${i}" role="option" aria-selected="false" data-index="${i}">
+          <strong>${escapeHtml(r.name)}</strong>
+          <span>${escapeHtml([r.admin1, r.country].filter(Boolean).join(", "))}</span>
+        </li>`)
+      .join("");
+    list.classList.remove("hidden");
+    input.setAttribute("aria-expanded", "true");
+  };
+
+  input.addEventListener("input", () => {
+    pickedPlace = null;
+    clearTimeout(timer);
+    const query = input.value.trim();
+    if (query.length < 2) return close();
+    timer = setTimeout(async () => {
+      const id = ++requestId;
+      try {
+        const found = await geocode(query);
+        if (id !== requestId) return;
+        results = found.slice(0, 6);
+        render();
+      } catch {
+        close();
+      }
+    }, 300);
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (list.classList.contains("hidden")) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      highlight(Math.min(active + 1, results.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      highlight(Math.max(active - 1, 0));
+    } else if (e.key === "Enter" && active >= 0) {
+      e.preventDefault();
+      choose(active);
+    } else if (e.key === "Escape") {
+      close();
+    }
+  });
+
+  // mousedown fires before the input loses focus
+  list.addEventListener("mousedown", (e) => {
+    const li = e.target.closest("li[data-index]");
+    if (!li) return;
+    e.preventDefault();
+    choose(Number(li.dataset.index));
+  });
+  input.addEventListener("blur", () => setTimeout(close, 150));
 }
 
 function renderPhotoWall(places) {
@@ -582,7 +811,7 @@ function loadOsmInto(input, plan) {
 async function generatePlan(input) {
   generateBtn.disabled = true;
   generateBtn.textContent = "Planning…";
-  results.classList.add("hidden");
+  renderSkeleton(input.days);
 
   try {
     let chosen;
@@ -596,6 +825,8 @@ async function generatePlan(input) {
       const candidates = await geocode(input.destination);
       if (!candidates.length) {
         setStatus(`We couldn't find “${input.destination}”. Check the spelling, or add the state, e.g. “Manali, Himachal”.`, "error");
+        results.classList.add("hidden");
+        results.removeAttribute("aria-busy");
         return;
       }
       setStatus(`Finding things to do around ${candidates[0].name}…`);
@@ -629,6 +860,7 @@ async function generatePlan(input) {
     } catch {
       // ignore: some embedded viewers block history changes
     }
+    results.removeAttribute("aria-busy");
     renderPlan(input, plan);
     renderPhotoWall(chosen.places);
     setStatus("");
@@ -638,6 +870,8 @@ async function generatePlan(input) {
     loadOsmInto(input, plan);
   } catch (error) {
     setStatus("Something went wrong while planning. Please check your connection and try again.", "error");
+    results.classList.add("hidden");
+    results.removeAttribute("aria-busy");
   } finally {
     generateBtn.disabled = false;
     generateBtn.textContent = "Generate Travel Plan";
@@ -662,8 +896,11 @@ form.addEventListener("submit", (e) => {
 
   const payload = { destination, days, tier: budgetTier, custom, modeType: mode, startDate };
   sessionStorage.setItem("trip-input", JSON.stringify(payload));
-  generatePlan(payload);
+  generatePlan(pickedPlace ? { ...payload, forcedPlace: pickedPlace } : payload);
 });
+
+setupDestinationSuggestions();
+renderSavedTrips();
 
 if (startDateInput) {
   startDateInput.min = todayIso();

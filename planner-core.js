@@ -191,7 +191,55 @@
     return { destination, days, tier, custom, modeType, startDate, place };
   }
 
+  /** Packing list built from the trip's forecast, length and travel mode. */
+  function packingList(weather, days, modeType) {
+    const known = (weather || []).filter((d) => d && !d.unavailable);
+    const minT = known.length ? Math.min(...known.map((d) => d.min)) : null;
+    const maxT = known.length ? Math.max(...known.map((d) => d.max)) : null;
+    const maxRain = known.length ? Math.max(...known.map((d) => d.rain ?? 0)) : 0;
+    const snow = known.some((d) => [71, 73, 75, 77, 85, 86].includes(d.code));
+    const nights = Math.max(days - 1, 1);
+
+    const items = [
+      { id: "id", label: "ID proof (Aadhaar, passport or driving licence)", group: "Essentials" },
+      { id: "tickets", label: "Tickets and hotel bookings (offline copy)", group: "Essentials" },
+      { id: "cash", label: "Some cash and a UPI-ready phone", group: "Essentials" },
+      { id: "charger", label: "Phone charger and power bank", group: "Essentials" },
+      { id: "meds", label: "Personal medicines and a small first-aid kit", group: "Essentials" },
+      { id: "clothes", label: `Clothes for ${days} day${days > 1 ? "s" : ""} (${nights + 1} sets)`, group: "Clothing" },
+      { id: "shoes", label: "Comfortable walking shoes", group: "Clothing" }
+    ];
+
+    if (minT !== null && minT <= 5) {
+      items.push({ id: "thermals", label: `Thermals, a heavy jacket, gloves and a woollen cap (lows of ${minT}°C)`, group: "Weather" });
+    } else if (minT !== null && minT <= 15) {
+      items.push({ id: "jacket", label: `A warm jacket for mornings and evenings (lows of ${minT}°C)`, group: "Weather" });
+    }
+    if (snow) items.push({ id: "snow", label: "Waterproof boots for snow", group: "Weather" });
+    if (maxRain >= 40) items.push({ id: "rain", label: `Umbrella or rain jacket (up to ${maxRain}% chance of rain)`, group: "Weather" });
+    if (maxT !== null && maxT >= 30) {
+      items.push({ id: "sun", label: `Sunscreen, sunglasses and a cap (highs of ${maxT}°C)`, group: "Weather" });
+      items.push({ id: "water", label: "A refillable water bottle", group: "Weather" });
+    }
+    if (modeType === "adventure") {
+      items.push({ id: "daypack", label: "Day backpack for hikes", group: "Activities" });
+      items.push({ id: "torch", label: "Torch or headlamp", group: "Activities" });
+    }
+    if (modeType === "luxury") {
+      items.push({ id: "outfit", label: "One smart outfit for dinners", group: "Activities" });
+    }
+    return items;
+  }
+
+  /** Adds a trip to the saved list: newest first, no duplicates, at most `limit`. */
+  function addSavedTrip(list, trip, limit = 10) {
+    const others = (list || []).filter((t) => t.query !== trip.query);
+    return [trip, ...others].slice(0, limit);
+  }
+
   return {
+    packingList,
+    addSavedTrip,
     NOT_ATTRACTION,
     WEATHER_CODES,
     escapeHtml,
